@@ -1,7 +1,7 @@
 import os
 from fn_user import *
 
-os.system('su')
+
 os.system('clear')
 print('=======user script==========')
 print('1. create user')
