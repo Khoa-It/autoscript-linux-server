@@ -1,28 +1,28 @@
-# Nội dung file Reverse Zone
-def generate_reverse_zone(domain,ip_address):
-    network = '.'.join(ip_address.split('.')[:3])
-    reverse_zone = '.'.join(network.split('.')[::-1]) + ".in-addr.arpa"
-    return f""" 
-zone "{reverse_zone}" IN {{
-    type master;
-    file "reverse.{domain}";
-    allow-update {{ none; }};
-}};
-"""
-last_octet = ip_address.split('.')[-1]
-reverse_zone_content = f"""
-$TTL 86400
-@   IN  SOA     ns1.{domain_name}. root.{domain_name}. (
-                2023111301 ; Serial
-                3600       ; Refresh
-                1800       ; Retry
-                604800     ; Expire
-                86400 )    ; Minimum TTL
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
 
-    IN  NS      ns1.{domain_name}.
-{last_octet}  IN  PTR     ns1.{domain_name}.
-"""
+sudo dnf install postfix dovecot mailx -y
+sudo nano /etc/postfix/main.cf
+myhostname = mail.tuilanumberone.com
+mydomain = tuilanumberone.com
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname, $mydomain, localhost.$mydomain, localhost
+home_mailbox = Maildir/
+smtpd_use_tls=no
+smtpd_tls_security_level=none
+smtp_tls_security_level=none
+sudo systemctl enable --now postfix
 
-create_zone_file(f"reverse.{domain_name}", reverse_zone_content)
-main_reverse_zone = '.'.join(main_network.split('.')[::-1]) + ".in-addr.arpa"
-os.system(f'named-checkzone {main_reverse_zone} /var/named/reverse.{domain_name}')
+sudo nano /etc/dovecot/dovecot.conf
+protocols = imap pop3
+disable_plaintext_auth = no
+mail_location = maildir:~/Maildir
+sudo nano /etc/dovecot/conf.d/10-ssl.conf
+ssl = no
+sudo systemctl enable --now dovecot
+
+echo "Hello from AlmaLinux" | mail -s "Test Email" user1@tuilanumberone.com
+sudo su - user1
+mail
